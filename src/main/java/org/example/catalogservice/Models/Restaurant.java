@@ -6,11 +6,13 @@ import org.example.catalogservice.Exceptions.CannotCreateRestaurantException;
 import java.util.List;
 
 @Entity
-@Table(name = "restaurants")
+@Table(name = "restaurants", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"name", "address"})
+})
 public class Restaurant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
     private String name;
     private String address;
 
@@ -30,5 +32,6 @@ public class Restaurant {
         this.address = address;
     }
 
-    public Restaurant() {}
+    public Restaurant() {
+    }
 }
