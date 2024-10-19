@@ -14,12 +14,6 @@ public class CustomExceptionHandler {
                 .body(new ResponseDTO<>(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
     }
 
-    @ExceptionHandler(CannotCreateMenuItemException.class)
-    public ResponseEntity<ResponseDTO<String>> handleCannotCreateMenuItemException(CannotCreateMenuItemException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ResponseDTO<>(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
-    }
-
     @ExceptionHandler(RestaurantDetailsAlreadyAddedException.class)
     public ResponseEntity<ResponseDTO<String>> handleRestaurantDetailsAlreadyAddedException(RestaurantDetailsAlreadyAddedException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -28,6 +22,24 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler(RestaurantDoesNotExistException.class)
     public ResponseEntity<ResponseDTO<String>> handleRestaurantDoesNotExistException(RestaurantDoesNotExistException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ResponseDTO<>(HttpStatus.NOT_FOUND.value(), e.getMessage()));
+    }
+
+    @ExceptionHandler(CannotCreateMenuItemException.class)
+    public ResponseEntity<ResponseDTO<String>> handleCannotCreateMenuItemException(CannotCreateMenuItemException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ResponseDTO<>(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+    }
+
+    @ExceptionHandler(MenuItemAlreadyAddedException.class)
+    public ResponseEntity<ResponseDTO<String>> handleMenuItemAlreadyAddedException(MenuItemAlreadyAddedException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ResponseDTO<>(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+    }
+
+    @ExceptionHandler(MenuItemDoesNotExistException.class)
+    public ResponseEntity<ResponseDTO<String>> handleMenuItemDoesNotExistException(MenuItemDoesNotExistException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ResponseDTO<>(HttpStatus.NOT_FOUND.value(), e.getMessage()));
     }

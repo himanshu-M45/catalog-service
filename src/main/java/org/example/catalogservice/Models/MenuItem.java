@@ -4,10 +4,13 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import org.example.catalogservice.Exceptions.CannotCreateMenuItemException;
 import org.springframework.data.annotation.Id;
 
 @Entity
 @Table(name = "menu_items")
+@Getter
 public class MenuItem {
     @jakarta.persistence.Id
     @Id
@@ -18,7 +21,7 @@ public class MenuItem {
 
     public MenuItem(String name, int price) {
         if (name == null || name.isEmpty() || price <= 0) {
-            throw new IllegalArgumentException("name cannot be null or empty and price cannot be less than or equal to 0");
+            throw new CannotCreateMenuItemException("name cannot be null or empty and price cannot be less than or equal to 0");
         }
         this.name = name;
         this.price = price;

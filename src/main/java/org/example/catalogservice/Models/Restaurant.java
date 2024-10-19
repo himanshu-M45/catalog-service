@@ -24,7 +24,7 @@ public class Restaurant {
             joinColumns = @JoinColumn(name = "restaurant_id"),
             inverseJoinColumns = @JoinColumn(name = "menu_item_id")
     )
-    private List<MenuItem> menuItems;
+    private List<MenuItem> menu;
 
     public Restaurant(String name, String address) {
         if (name == null || name.isEmpty() || address == null || address.isEmpty()) {

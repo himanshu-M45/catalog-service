@@ -71,7 +71,8 @@ class RestaurantServiceTest {
     }
 
     @Test
-    void testAddDuplicateRestaurantThrowsException() {when(restaurantRepository.save(any(Restaurant.class)))
+    void testAddDuplicateRestaurantThrowsException() {
+        when(restaurantRepository.save(any(Restaurant.class)))
                 .thenThrow(new DataIntegrityViolationException("Duplicate entry"));
 
         Exception exception = assertThrows(RestaurantDetailsAlreadyAddedException.class, () -> {
