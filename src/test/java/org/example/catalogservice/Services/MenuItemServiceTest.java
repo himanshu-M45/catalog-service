@@ -69,7 +69,7 @@ class MenuItemServiceTest {
             menuItemService.addMenuItem("Margherita Pizza", 80);
         });
 
-        assertEquals("menu item details already added", exception.getMessage());
+        assertEquals("menu item already added", exception.getMessage());
         verify(menuItemRepository, times(1)).save(any(MenuItem.class));
     }
 

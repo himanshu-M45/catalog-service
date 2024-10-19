@@ -17,7 +17,7 @@ public class MenuItemService {
             menuItemRepository.save(new MenuItem(name, price));
             return "menu item added successfully";
         } catch (DataIntegrityViolationException e) {
-            throw new MenuItemAlreadyAddedException("menu item details already added");
+            throw new MenuItemAlreadyAddedException("menu item already added");
         }
     }
 }

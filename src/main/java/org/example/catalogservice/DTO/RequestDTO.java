@@ -6,4 +6,5 @@ import lombok.Data;
 public class RequestDTO {
     private String name;
     private String address;
+    private int price;
 }

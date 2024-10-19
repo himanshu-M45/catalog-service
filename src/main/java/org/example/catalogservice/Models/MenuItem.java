@@ -1,15 +1,12 @@
 package org.example.catalogservice.Models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import org.example.catalogservice.Exceptions.CannotCreateMenuItemException;
 import org.springframework.data.annotation.Id;
 
 @Entity
-@Table(name = "menu_items")
+@Table(name = "menu_items", uniqueConstraints = {@UniqueConstraint(columnNames = "name")})
 @Getter
 public class MenuItem {
     @jakarta.persistence.Id
@@ -27,5 +24,6 @@ public class MenuItem {
         this.price = price;
     }
 
-    public MenuItem() {}
+    public MenuItem() {
+    }
 }

@@ -32,7 +32,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
                                 .requestMatchers(HttpMethod.GET, "/restaurants/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/restaurants/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/restaurants/**", "/menu-items/**").hasRole("ADMIN")
                                 .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults())
