@@ -77,8 +77,8 @@ class MenuItemControllerTest {
         mockMvc.perform(post("/menu-items")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\": \"\", \"price\": \"\"}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.statusCode").value(400))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.statusCode").value(409))
                 .andExpect(jsonPath("$.data")
                         .value("name cannot be null or empty and price cannot be less than or equal to 0"));
 
@@ -163,5 +163,73 @@ class MenuItemControllerTest {
                 .andExpect(jsonPath("$.data").value("no menu item found"));
 
         verify(menuItemService, times(1)).findById(1);
+    }
+
+    @Test
+    void testAssignMenuItemsToRestaurantSuccess() throws Exception {
+        when(menuItemService.assignMenuItemToRestaurant(1, "1,2,3"))
+                .thenReturn("menu items assigned successfully");
+
+        mockMvc.perform(post("/menu-items/assigns/{restaurantId}", 1)
+                        .param("menuItemIds", "1,2,3")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusCode").value(200))
+                .andExpect(jsonPath("$.data").value("menu items assigned successfully"));
+
+        verify(menuItemService, times(1)).assignMenuItemToRestaurant(1, "1,2,3");
+    }
+
+    @Test
+    void testAssignMenuItemsToRestaurant_RestaurantDoesNotExist() throws Exception {
+        String menuItemIds = "1,2,3";
+        int restaurantId = 1;
+        String errorMessage = "restaurant does not exist";
+
+        when(menuItemService.assignMenuItemToRestaurant(restaurantId, menuItemIds))
+                .thenThrow(new RestaurantDoesNotExistException(errorMessage));
+
+        mockMvc.perform(post("/menu-items/assigns/{restaurantId}", restaurantId)
+                        .param("menuItemIds", menuItemIds)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.statusCode").value(404))
+                .andExpect(jsonPath("$.data").value(errorMessage));
+
+        verify(menuItemService, times(1)).assignMenuItemToRestaurant(restaurantId, menuItemIds);
+    }
+
+    @Test
+    void testAssignMenuItemsToRestaurant_MenuItemDoesNotExist() throws Exception {
+        String menuItemIds = "1,2,3";
+        int restaurantId = 1;
+        String errorMessage = "one or more menu items do not exist";
+
+        when(menuItemService.assignMenuItemToRestaurant(restaurantId, menuItemIds))
+                .thenThrow(new MenuItemDoesNotExistException(errorMessage));
+
+        mockMvc.perform(post("/menu-items/assigns/{restaurantId}", restaurantId)
+                        .param("menuItemIds", menuItemIds)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.statusCode").value(404))
+                .andExpect(jsonPath("$.data").value(errorMessage));
+
+        verify(menuItemService, times(1)).assignMenuItemToRestaurant(restaurantId, menuItemIds);
+    }
+
+    @Test
+    void testAssignMenuItemsToRestaurant_MenuItemAlreadyAssigned() throws Exception {
+        when(menuItemService.assignMenuItemToRestaurant(1, "1,2,3"))
+                .thenThrow(new MenuItemAlreadyAssignedException("menu item already assigned to restaurant"));
+
+        mockMvc.perform(post("/menu-items/assigns/{restaurantId}", 1)
+                        .param("menuItemIds", "1,2,3")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.statusCode").value(409))
+                .andExpect(jsonPath("$.data").value("menu item already assigned to restaurant"));
+
+        verify(menuItemService, times(1)).assignMenuItemToRestaurant(1, "1,2,3");
     }
 }

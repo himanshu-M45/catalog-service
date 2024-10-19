@@ -16,8 +16,8 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler(RestaurantDetailsAlreadyAddedException.class)
     public ResponseEntity<ResponseDTO<String>> handleRestaurantDetailsAlreadyAddedException(RestaurantDetailsAlreadyAddedException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ResponseDTO<>(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ResponseDTO<>(HttpStatus.CONFLICT.value(), e.getMessage()));
     }
 
     @ExceptionHandler(RestaurantDoesNotExistException.class)
@@ -28,8 +28,8 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler(CannotCreateMenuItemException.class)
     public ResponseEntity<ResponseDTO<String>> handleCannotCreateMenuItemException(CannotCreateMenuItemException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ResponseDTO<>(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ResponseDTO<>(HttpStatus.CONFLICT.value(), e.getMessage()));
     }
 
     @ExceptionHandler(MenuItemAlreadyAddedException.class)
@@ -42,5 +42,11 @@ public class CustomExceptionHandler {
     public ResponseEntity<ResponseDTO<String>> handleMenuItemDoesNotExistException(MenuItemDoesNotExistException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ResponseDTO<>(HttpStatus.NOT_FOUND.value(), e.getMessage()));
+    }
+
+    @ExceptionHandler(MenuItemAlreadyAssignedException.class)
+    public ResponseEntity<ResponseDTO<String>> handleMenuItemAlreadyAssignedException(MenuItemAlreadyAssignedException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ResponseDTO<>(HttpStatus.CONFLICT.value(), e.getMessage()));
     }
 }

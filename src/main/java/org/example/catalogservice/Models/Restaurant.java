@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import org.example.catalogservice.Exceptions.CannotCreateRestaurantException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -32,8 +33,10 @@ public class Restaurant {
         }
         this.name = name;
         this.address = address;
+        this.menu = new ArrayList<>();
     }
 
     public Restaurant() {
+        this.menu = new ArrayList<>();
     }
 }
