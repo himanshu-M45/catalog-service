@@ -2,7 +2,7 @@ package org.example.catalogservice.Controllers;
 
 import org.example.catalogservice.DTO.RequestDTO;
 import org.example.catalogservice.DTO.ResponseDTO;
-import org.example.catalogservice.DTO.RestaurantGetResponseDTO;
+import org.example.catalogservice.DTO.GETResponseDTO;
 import org.example.catalogservice.Models.Restaurant;
 import org.example.catalogservice.Services.RestaurantService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,16 +28,16 @@ public class RestaurantController {
     @GetMapping("")
     public ResponseEntity<Object> getAllRestaurant() {
         List<Restaurant> restaurants = restaurantService.findAllRestaurants();
-        List<RestaurantGetResponseDTO> restaurantGetResponseDTOS = restaurants.stream()
+        List<GETResponseDTO> GETResponseDTOS = restaurants.stream()
                 .map(restaurantService::convertToDto)
                 .toList();
-        return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), restaurantGetResponseDTOS));
+        return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), GETResponseDTOS));
     }
 
     @GetMapping("/{restaurantId}")
     public ResponseEntity<Object> getRestaurantById(@PathVariable Integer restaurantId) {
         Restaurant restaurant = restaurantService.findById(restaurantId);
-        RestaurantGetResponseDTO restaurantGetResponseDTO = restaurantService.convertToDto(restaurant);
-        return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), restaurantGetResponseDTO));
+        GETResponseDTO GETResponseDTO = restaurantService.convertToDto(restaurant);
+        return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), GETResponseDTO));
     }
 }

@@ -1,11 +1,16 @@
 package org.example.catalogservice.Services;
 
+import org.example.catalogservice.DTO.GETResponseDTO;
 import org.example.catalogservice.Exceptions.MenuItemAlreadyAddedException;
+import org.example.catalogservice.Exceptions.RestaurantDoesNotExistException;
 import org.example.catalogservice.Models.MenuItem;
 import org.example.catalogservice.Repositories.MenuItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MenuItemService {
@@ -19,5 +24,29 @@ public class MenuItemService {
         } catch (DataIntegrityViolationException e) {
             throw new MenuItemAlreadyAddedException("menu item already added");
         }
+    }
+
+    public MenuItem findById(Integer id) {
+        MenuItem menuItem = menuItemRepository.findById(id).orElse(null);
+        if (menuItem != null) {
+            return menuItem;
+        }
+        throw new RestaurantDoesNotExistException("restaurant does not exist");
+    }
+
+    public List<MenuItem> findAllMenuItems() {
+        List<MenuItem> menuItems = menuItemRepository.findAll();
+        if (menuItems.isEmpty()) {
+            throw new RestaurantDoesNotExistException("no restaurants found");
+        }
+        return menuItemRepository.findAll();
+    }
+
+    public GETResponseDTO convertToDto(MenuItem menuItem) {
+        GETResponseDTO dto = new GETResponseDTO();
+        dto.setId(menuItem.getId());
+        dto.setName(menuItem.getName());
+        dto.setPrice(Optional.of(menuItem.getPrice()));
+        return dto;
     }
 }
