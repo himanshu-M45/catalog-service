@@ -1,10 +1,7 @@
 package org.example.catalogservice.Controllers;
 
 import org.example.catalogservice.DTO.GETResponseDTO;
-import org.example.catalogservice.Exceptions.CannotCreateRestaurantException;
-import org.example.catalogservice.Exceptions.CustomExceptionHandler;
-import org.example.catalogservice.Exceptions.RestaurantDetailsAlreadyAddedException;
-import org.example.catalogservice.Exceptions.RestaurantDoesNotExistException;
+import org.example.catalogservice.Exceptions.*;
 import org.example.catalogservice.Models.Restaurant;
 import org.example.catalogservice.Services.RestaurantService;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,8 +62,8 @@ class RestaurantControllerTest {
         mockMvc.perform(post("/restaurants")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\": \"Pizza Place\", \"address\": \"123 Main St\"}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.statusCode").value(400))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.statusCode").value(409))
                 .andExpect(jsonPath("$.data").value("restaurant details already added"));
 
         verify(restaurantService, times(1)).addRestaurant("Pizza Place", "123 Main St");
@@ -164,5 +161,65 @@ class RestaurantControllerTest {
                 .andExpect(jsonPath("$.data").value("no restaurants found"));
 
         verify(restaurantService, times(1)).findById(1);
+    }
+
+    @Test
+    void testAssignMenuItemsToRestaurantSuccess() throws Exception {
+        when(restaurantService.assignMenuItemToRestaurant(1, "1,2,3"))
+                .thenReturn("menu items assigned successfully");
+
+        mockMvc.perform(post("/restaurants/{restaurantId}/menu-items", 1)
+                        .param("menuItemIds", "1,2,3")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusCode").value(200))
+                .andExpect(jsonPath("$.data").value("menu items assigned successfully"));
+
+        verify(restaurantService, times(1)).assignMenuItemToRestaurant(1, "1,2,3");
+    }
+
+    @Test
+    void testAssignMenuItemsToRestaurant_RestaurantDoesNotExist() throws Exception {
+        when(restaurantService.assignMenuItemToRestaurant(1, "1,2,3"))
+                .thenThrow(new RestaurantDoesNotExistException("restaurant does not exist"));
+
+        mockMvc.perform(post("/restaurants/{restaurantId}/menu-items", 1)
+                        .param("menuItemIds", "1,2,3")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.statusCode").value(404))
+                .andExpect(jsonPath("$.data").value("restaurant does not exist"));
+
+        verify(restaurantService, times(1)).assignMenuItemToRestaurant(1, "1,2,3");
+    }
+
+    @Test
+    void testAssignMenuItemsToRestaurant_MenuItemDoesNotExist() throws Exception {
+        when(restaurantService.assignMenuItemToRestaurant(1, "1,2,3"))
+                .thenThrow(new MenuItemDoesNotExistException("one or more menu items do not exist"));
+
+        mockMvc.perform(post("/restaurants/{restaurantId}/menu-items", 1)
+                        .param("menuItemIds", "1,2,3")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.statusCode").value(404))
+                .andExpect(jsonPath("$.data").value("one or more menu items do not exist"));
+
+        verify(restaurantService, times(1)).assignMenuItemToRestaurant(1, "1,2,3");
+    }
+
+    @Test
+    void testAssignMenuItemsToRestaurant_MenuItemAlreadyAssigned() throws Exception {
+        when(restaurantService.assignMenuItemToRestaurant(1, "1,2,3"))
+                .thenThrow(new MenuItemAlreadyAssignedException("menu item already assigned to restaurant"));
+
+        mockMvc.perform(post("/restaurants/{restaurantId}/menu-items", 1)
+                        .param("menuItemIds", "1,2,3")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.statusCode").value(409))
+                .andExpect(jsonPath("$.data").value("menu item already assigned to restaurant"));
+
+        verify(restaurantService, times(1)).assignMenuItemToRestaurant(1, "1,2,3");
     }
 }

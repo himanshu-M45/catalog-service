@@ -3,6 +3,7 @@ package org.example.catalogservice.Controllers;
 import org.example.catalogservice.DTO.RequestDTO;
 import org.example.catalogservice.DTO.ResponseDTO;
 import org.example.catalogservice.DTO.GETResponseDTO;
+import org.example.catalogservice.Models.MenuItem;
 import org.example.catalogservice.Models.Restaurant;
 import org.example.catalogservice.Services.RestaurantService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,5 +40,17 @@ public class RestaurantController {
         Restaurant restaurant = restaurantService.findById(restaurantId);
         GETResponseDTO GETResponseDTO = restaurantService.convertToDto(restaurant);
         return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), GETResponseDTO));
+    }
+
+    @PostMapping("/{restaurantId}/menu-items")
+    public ResponseEntity<Object> assign(@PathVariable int restaurantId, @RequestParam String menuItemIds) {
+        String response = restaurantService.assignMenuItemToRestaurant(restaurantId, menuItemIds);
+        return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), response));
+    }
+
+    @GetMapping("/{restaurantId}/menu-items")
+    public ResponseEntity<Object> getMenuItemsByRestaurantId(@PathVariable Integer restaurantId) {
+        List<MenuItem> GETResponseDTOS = restaurantService.getMenuItemsByRestaurantId(restaurantId);
+        return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), GETResponseDTOS));
     }
 }

@@ -2,9 +2,7 @@ package org.example.catalogservice.Services;
 
 import org.example.catalogservice.Exceptions.*;
 import org.example.catalogservice.Models.MenuItem;
-import org.example.catalogservice.Models.Restaurant;
 import org.example.catalogservice.Repositories.MenuItemRepository;
-import org.example.catalogservice.Repositories.RestaurantRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -21,23 +19,16 @@ import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.times;
 
 class MenuItemServiceTest {
-    
-    @Mock
-    private MenuItemRepository menuItemRepository;
 
     @Mock
-    private RestaurantRepository restaurantRepository;;
+    private MenuItemRepository menuItemRepository;
 
     @InjectMocks
     private MenuItemService menuItemService;
 
-    @Mock
-    private RestaurantService restaurantService;
-
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        when(restaurantRepository.findById(anyInt())).thenReturn(Optional.of(new Restaurant()));
     }
 
     @Test
@@ -73,7 +64,7 @@ class MenuItemServiceTest {
     @Test
     void testAddDuplicateMenuItemThrowsException() {
         when(menuItemRepository.save(any(MenuItem.class)))
-            .thenThrow(new DataIntegrityViolationException("Duplicate entry"));
+                .thenThrow(new DataIntegrityViolationException("Duplicate entry"));
 
         Exception exception = assertThrows(MenuItemAlreadyAddedException.class, () -> {
             menuItemService.addMenuItem("Margherita Pizza", 80);
@@ -114,7 +105,7 @@ class MenuItemServiceTest {
         assertNotNull(menuItems);
         assertEquals(1, menuItems.size());
         assertEquals("Margherita Pizza", menuItems.get(0).getName());
-        verify(menuItemRepository, times(2)).findAll();
+        verify(menuItemRepository, times(1)).findAll();
     }
 
     @Test
@@ -130,64 +121,33 @@ class MenuItemServiceTest {
     }
 
     @Test
-    void testAssignMenuItemToRestaurantSuccess() {
-        Restaurant restaurant = new Restaurant();
+    void testFindAllByIdSuccess() {
+        List<Integer> menuItemIds = List.of(1, 2);
         MenuItem menuItem1 = new MenuItem("Pizza", 100);
         MenuItem menuItem2 = new MenuItem("Burger", 50);
 
-        when(restaurantService.findById(anyInt())).thenReturn(restaurant);
-        when(menuItemRepository.findAllById(anyList())).thenReturn(List.of(menuItem1, menuItem2));
+        when(menuItemRepository.findAllById(menuItemIds)).thenReturn(List.of(menuItem1, menuItem2));
 
-        String response = menuItemService.assignMenuItemToRestaurant(1, "1,2");
+        List<MenuItem> menuItems = menuItemService.findAllById(menuItemIds);
 
-        assertEquals("menu items assigned to restaurant successfully", response);
-        verify(restaurantService, times(1)).findById(1);
-        verify(menuItemRepository, times(1)).findAllById(List.of(1, 2));
+        assertNotNull(menuItems);
+        assertEquals(2, menuItems.size());
+        assertEquals("Pizza", menuItems.get(0).getName());
+        assertEquals("Burger", menuItems.get(1).getName());
+        verify(menuItemRepository, times(1)).findAllById(menuItemIds);
     }
 
     @Test
-    void testAssignMenuItemToRestaurantRestaurantNotFound() {
-        when(restaurantService.findById(anyInt())).thenReturn(null);
+    void testFindAllByIdMenuItemNotFound() {
+        List<Integer> menuItemIds = List.of(1, 2);
 
-        Exception exception = assertThrows(RestaurantDoesNotExistException.class, () -> {
-            menuItemService.assignMenuItemToRestaurant(1, "1,2");
-        });
-
-        assertEquals("restaurant does not exist", exception.getMessage());
-        verify(restaurantService, times(1)).findById(1);
-        verify(menuItemRepository, never()).findAllById(anyList());
-    }
-
-    @Test
-    void testAssignMenuItemToRestaurantMenuItemNotFound() {
-        Restaurant restaurant = new Restaurant();
-        when(restaurantService.findById(anyInt())).thenReturn(restaurant);
-        when(menuItemRepository.findAllById(anyList())).thenReturn(List.of());
+        when(menuItemRepository.findAllById(menuItemIds)).thenReturn(List.of());
 
         Exception exception = assertThrows(MenuItemDoesNotExistException.class, () -> {
-            menuItemService.assignMenuItemToRestaurant(1, "1,2");
+            menuItemService.findAllById(menuItemIds);
         });
 
         assertEquals("one or more menu items do not exist", exception.getMessage());
-        verify(restaurantService, times(1)).findById(1);
-        verify(menuItemRepository, times(1)).findAllById(List.of(1, 2));
-    }
-
-    @Test
-    void testAssignMenuItemToRestaurantMenuItemAlreadyAssigned() {
-        Restaurant restaurant = new Restaurant();
-        MenuItem menuItem = new MenuItem("Pizza", 100);
-        restaurant.getMenu().add(menuItem);
-
-        when(restaurantService.findById(anyInt())).thenReturn(restaurant);
-        when(menuItemRepository.findAllById(anyList())).thenReturn(List.of(menuItem));
-
-        Exception exception = assertThrows(MenuItemAlreadyAssignedException.class, () -> {
-            menuItemService.assignMenuItemToRestaurant(1, "1");
-        });
-
-        assertEquals("menu item already assigned to restaurant", exception.getMessage());
-        verify(restaurantService, times(1)).findById(1);
-        verify(menuItemRepository, times(1)).findAllById(List.of(1));
+        verify(menuItemRepository, times(1)).findAllById(menuItemIds);
     }
 }

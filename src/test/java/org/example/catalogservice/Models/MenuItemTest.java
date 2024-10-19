@@ -1,5 +1,6 @@
 package org.example.catalogservice.Models;
 
+import org.example.catalogservice.Exceptions.CannotCreateMenuItemException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,14 +16,14 @@ class MenuItemTest {
 
     @Test
     void testMenuItemCreationWithInvalidName() {
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(CannotCreateMenuItemException.class, () -> {
             new MenuItem("", 10);
         });
     }
 
     @Test
     void testMenuItemCreationWithInvalidPrice() {
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(CannotCreateMenuItemException.class, () -> {
             new MenuItem("Burger", -1);
         });
     }

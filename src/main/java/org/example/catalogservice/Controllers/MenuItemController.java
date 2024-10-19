@@ -39,10 +39,4 @@ public class MenuItemController {
         GETResponseDTO GETResponseDTO = menuItemService.convertToDto(menuItem);
         return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), GETResponseDTO));
     }
-
-    @PostMapping("/assigns/{restaurantId}")
-    public ResponseEntity<Object> assign(@PathVariable int restaurantId, @RequestParam String menuItemIds) {
-        String response = menuItemService.assignMenuItemToRestaurant(restaurantId, menuItemIds);
-        return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), response));
-    }
 }

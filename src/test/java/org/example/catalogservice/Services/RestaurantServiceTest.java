@@ -1,9 +1,9 @@
 package org.example.catalogservice.Services;
 
-import org.example.catalogservice.Exceptions.CannotCreateRestaurantException;
-import org.example.catalogservice.Exceptions.RestaurantDetailsAlreadyAddedException;
-import org.example.catalogservice.Exceptions.RestaurantDoesNotExistException;
+import org.example.catalogservice.Exceptions.*;
+import org.example.catalogservice.Models.MenuItem;
 import org.example.catalogservice.Models.Restaurant;
+import org.example.catalogservice.Repositories.MenuItemRepository;
 import org.example.catalogservice.Repositories.RestaurantRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,9 +26,16 @@ class RestaurantServiceTest {
     @InjectMocks
     private RestaurantService restaurantService;
 
+    @Mock
+    private MenuItemRepository menuItemRepository;
+
+    @Mock
+    private MenuItemService menuItemService;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        when(menuItemRepository.findById(anyInt())).thenReturn(Optional.of(new MenuItem()));
     }
 
     @Test
@@ -128,5 +135,69 @@ class RestaurantServiceTest {
 
         assertEquals("no restaurants found", exception.getMessage());
         verify(restaurantRepository, times(1)).findAll();
+    }
+
+    @Test
+    void testAssignMenuItemToRestaurantSuccess() {
+        Restaurant restaurant = new Restaurant();
+        MenuItem menuItem1 = new MenuItem("Pizza", 100);
+        MenuItem menuItem2 = new MenuItem("Burger", 50);
+
+        when(restaurantRepository.findById(anyInt())).thenReturn(Optional.of(restaurant));
+        when(menuItemService.findAllById(anyList())).thenReturn(List.of(menuItem1, menuItem2));
+
+        String response = restaurantService.assignMenuItemToRestaurant(1, "1,2");
+
+        assertEquals("menu items assigned to restaurant successfully", response);
+        verify(restaurantRepository, times(1)).findById(1);
+        verify(menuItemService, times(1)).findAllById(List.of(1, 2));
+    }
+
+    @Test
+    void testAssignMenuItemToRestaurantRestaurantNotFound() {
+        when(restaurantRepository.findById(anyInt()))
+                .thenThrow(new RestaurantDoesNotExistException("restaurant does not exist"));
+
+        Exception exception = assertThrows(RestaurantDoesNotExistException.class, () -> {
+            restaurantService.assignMenuItemToRestaurant(1, "1,2");
+        });
+
+        assertEquals("restaurant does not exist", exception.getMessage());
+        verify(restaurantRepository, times(1)).findById(1);
+        verify(menuItemService, never()).findAllById(anyList());
+    }
+
+    @Test
+    void testAssignMenuItemToRestaurantMenuItemNotFound() {
+        Restaurant restaurant = new Restaurant();
+        when(restaurantRepository.findById(anyInt())).thenReturn(Optional.of(restaurant));
+        when(menuItemService.findAllById(anyList()))
+                .thenThrow(new MenuItemDoesNotExistException("one or more menu items do not exist"));
+
+        Exception exception = assertThrows(MenuItemDoesNotExistException.class, () -> {
+            restaurantService.assignMenuItemToRestaurant(1, "1,2");
+        });
+
+        assertEquals("one or more menu items do not exist", exception.getMessage());
+        verify(restaurantRepository, times(1)).findById(1);
+        verify(menuItemService, times(1)).findAllById(List.of(1, 2));
+    }
+
+    @Test
+    void testAssignMenuItemToRestaurantMenuItemAlreadyAssigned() {
+        Restaurant restaurant = new Restaurant();
+        MenuItem menuItem = new MenuItem("Pizza", 100);
+        restaurant.getMenu().add(menuItem);
+
+        when(restaurantRepository.findById(anyInt())).thenReturn(Optional.of(restaurant));
+        when(menuItemService.findAllById(anyList())).thenReturn(List.of(menuItem));
+
+        Exception exception = assertThrows(MenuItemAlreadyAssignedException.class, () -> {
+            restaurantService.assignMenuItemToRestaurant(1, "1");
+        });
+
+        assertEquals("menu item already assigned to restaurant", exception.getMessage());
+        verify(restaurantRepository, times(1)).findById(1);
+        verify(menuItemService, times(1)).findAllById(List.of(1));
     }
 }
