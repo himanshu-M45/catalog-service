@@ -2,6 +2,7 @@ package org.example.catalogservice.Services;
 
 import org.example.catalogservice.Exceptions.CannotCreateRestaurantException;
 import org.example.catalogservice.Exceptions.RestaurantDetailsAlreadyAddedException;
+import org.example.catalogservice.Exceptions.RestaurantDoesNotExistException;
 import org.example.catalogservice.Models.Restaurant;
 import org.example.catalogservice.Repositories.RestaurantRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,6 +11,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.dao.DataIntegrityViolationException;
+
+import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -77,5 +80,26 @@ class RestaurantServiceTest {
 
         assertEquals("restaurant details already added", exception.getMessage());
         verify(restaurantRepository, times(1)).save(any(Restaurant.class));
+    }
+
+    @Test
+    void testFindByIdSuccess() {
+        when(restaurantRepository.findById(anyInt())).thenReturn(Optional.of(new Restaurant()));
+
+        Restaurant foundRestaurant = restaurantService.findById(420);
+
+        assertNotNull(foundRestaurant);
+        verify(restaurantRepository, times(1)).findById(420);
+    }
+
+    @Test
+    void testFindByIdNotFound() {
+        when(restaurantRepository.findById(anyInt())).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(RestaurantDoesNotExistException.class, () -> {
+            restaurantService.findById(1);
+        });
+
+        assertEquals("restaurant does not exist", exception.getMessage());
     }
 }

@@ -1,6 +1,7 @@
 package org.example.catalogservice.Models;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import org.example.catalogservice.Exceptions.CannotCreateRestaurantException;
 
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.List;
 @Table(name = "restaurants", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"name", "address"})
 })
+@Getter
 public class Restaurant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
