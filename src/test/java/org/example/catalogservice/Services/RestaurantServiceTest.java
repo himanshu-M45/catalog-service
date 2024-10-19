@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.dao.DataIntegrityViolationException;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
@@ -87,10 +88,10 @@ class RestaurantServiceTest {
     void testFindByIdSuccess() {
         when(restaurantRepository.findById(anyInt())).thenReturn(Optional.of(new Restaurant()));
 
-        Restaurant foundRestaurant = restaurantService.findById(420);
+        Restaurant foundRestaurant = restaurantService.findById(1);
 
         assertNotNull(foundRestaurant);
-        verify(restaurantRepository, times(1)).findById(420);
+        verify(restaurantRepository, times(1)).findById(1);
     }
 
     @Test
@@ -98,9 +99,34 @@ class RestaurantServiceTest {
         when(restaurantRepository.findById(anyInt())).thenReturn(Optional.empty());
 
         Exception exception = assertThrows(RestaurantDoesNotExistException.class, () -> {
-            restaurantService.findById(1);
+            restaurantService.findById(420);
         });
 
         assertEquals("restaurant does not exist", exception.getMessage());
+    }
+
+    @Test
+    void testFindAllRestaurantsSuccess() {
+        Restaurant restaurant = new Restaurant("Pizza Place", "123 Main St");
+        when(restaurantRepository.findAll()).thenReturn(List.of(restaurant));
+
+        List<Restaurant> restaurants = restaurantService.findAllRestaurants();
+
+        assertNotNull(restaurants);
+        assertEquals(1, restaurants.size());
+        assertEquals("Pizza Place", restaurants.get(0).getName());
+        verify(restaurantRepository, times(2)).findAll();
+    }
+
+    @Test
+    void testFindAllRestaurantsNotFound() {
+        when(restaurantRepository.findAll()).thenReturn(List.of());
+
+        Exception exception = assertThrows(RestaurantDoesNotExistException.class, () -> {
+            restaurantService.findAllRestaurants();
+        });
+
+        assertEquals("no restaurants found", exception.getMessage());
+        verify(restaurantRepository, times(1)).findAll();
     }
 }

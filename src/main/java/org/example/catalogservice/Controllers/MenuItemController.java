@@ -4,7 +4,6 @@ import org.example.catalogservice.DTO.GETResponseDTO;
 import org.example.catalogservice.DTO.RequestDTO;
 import org.example.catalogservice.DTO.ResponseDTO;
 import org.example.catalogservice.Models.MenuItem;
-import org.example.catalogservice.Models.Restaurant;
 import org.example.catalogservice.Services.MenuItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

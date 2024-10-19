@@ -6,7 +6,9 @@ import org.example.catalogservice.Exceptions.CannotCreateMenuItemException;
 import org.springframework.data.annotation.Id;
 
 @Entity
-@Table(name = "menu_items", uniqueConstraints = {@UniqueConstraint(columnNames = "name")})
+@Table(name = "menu_items", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"name", "price"})
+})
 @Getter
 public class MenuItem {
     @jakarta.persistence.Id

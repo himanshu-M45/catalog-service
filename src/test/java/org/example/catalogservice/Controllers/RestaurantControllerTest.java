@@ -1,8 +1,11 @@
 package org.example.catalogservice.Controllers;
 
+import org.example.catalogservice.DTO.GETResponseDTO;
 import org.example.catalogservice.Exceptions.CannotCreateRestaurantException;
 import org.example.catalogservice.Exceptions.CustomExceptionHandler;
 import org.example.catalogservice.Exceptions.RestaurantDetailsAlreadyAddedException;
+import org.example.catalogservice.Exceptions.RestaurantDoesNotExistException;
+import org.example.catalogservice.Models.Restaurant;
 import org.example.catalogservice.Services.RestaurantService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,8 +16,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.List;
+import java.util.Optional;
+
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -66,7 +73,7 @@ class RestaurantControllerTest {
     }
 
     @Test
-    void testAddRestaurantWithoutNameBadRequest() throws Exception {
+    void testAddRestaurantWithoutNameAndAddressBadRequest() throws Exception {
         when(restaurantService.addRestaurant(anyString(), anyString()))
                 .thenThrow(new CannotCreateRestaurantException("name and address cannot be null or empty"));
 
@@ -80,4 +87,82 @@ class RestaurantControllerTest {
         verify(restaurantService, times(1)).addRestaurant("", "");
     }
 
+    @Test
+    void testGetAllRestaurantSuccess() throws Exception {
+        Restaurant restaurant = mock(Restaurant.class);
+        when(restaurant.getId()).thenReturn(1);
+        when(restaurant.getName()).thenReturn("Pizza Place");
+        when(restaurant.getAddress()).thenReturn("123 Main St");
+
+        GETResponseDTO responseDTO = new GETResponseDTO();
+        responseDTO.setId(1);
+        responseDTO.setName("Pizza Place");
+        responseDTO.setAddress(Optional.of("123 Main St"));
+
+        when(restaurantService.findAllRestaurants()).thenReturn(List.of(restaurant));
+        when(restaurantService.convertToDto(restaurant)).thenReturn(responseDTO);
+
+        mockMvc.perform(get("/restaurants")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusCode").value(200))
+                .andExpect(jsonPath("$.data[0].id").value(1))
+                .andExpect(jsonPath("$.data[0].name").value("Pizza Place"))
+                .andExpect(jsonPath("$.data[0].address").value("123 Main St"));
+
+        verify(restaurantService, times(1)).findAllRestaurants();
+    }
+
+    @Test
+    void testGetAllRestaurantEmptyList() throws Exception {
+        when(restaurantService.findAllRestaurants())
+                .thenThrow(new RestaurantDoesNotExistException("no restaurants found"));
+
+        mockMvc.perform(get("/restaurants")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.statusCode").value(404))
+                .andExpect(jsonPath("$.data").value("no restaurants found"));
+
+        verify(restaurantService, times(1)).findAllRestaurants();
+    }
+
+    @Test
+    void testGetRestaurantByIdSuccess() throws Exception {
+        Restaurant restaurant = mock(Restaurant.class);
+        when(restaurant.getId()).thenReturn(1);
+        when(restaurant.getName()).thenReturn("Pizza Place");
+        when(restaurant.getAddress()).thenReturn("123 Main St");
+
+        GETResponseDTO responseDTO = new GETResponseDTO();
+        responseDTO.setId(1);
+        responseDTO.setName("Pizza Place");
+        responseDTO.setAddress(Optional.of("123 Main St"));
+        when(restaurantService.findById(1)).thenReturn(restaurant);
+        when(restaurantService.convertToDto(restaurant)).thenReturn(responseDTO);
+
+        mockMvc.perform(get("/restaurants/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusCode").value(200))
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.name").value("Pizza Place"))
+                .andExpect(jsonPath("$.data.address").value("123 Main St"));
+
+        verify(restaurantService, times(1)).findById(1);
+    }
+
+    @Test
+    void testGetRestaurantByIdNotFound() throws Exception {
+        when(restaurantService.findById(1))
+                .thenThrow(new RestaurantDoesNotExistException("no restaurants found"));
+
+        mockMvc.perform(get("/restaurants/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.statusCode").value(404))
+                .andExpect(jsonPath("$.data").value("no restaurants found"));
+
+        verify(restaurantService, times(1)).findById(1);
+    }
 }

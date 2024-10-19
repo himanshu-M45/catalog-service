@@ -1,7 +1,6 @@
 package org.example.catalogservice.Services;
 
-import org.example.catalogservice.Exceptions.CannotCreateMenuItemException;
-import org.example.catalogservice.Exceptions.MenuItemAlreadyAddedException;
+import org.example.catalogservice.Exceptions.*;
 import org.example.catalogservice.Models.MenuItem;
 import org.example.catalogservice.Repositories.MenuItemRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,8 +10,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.dao.DataIntegrityViolationException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.times;
@@ -73,4 +74,49 @@ class MenuItemServiceTest {
         verify(menuItemRepository, times(1)).save(any(MenuItem.class));
     }
 
+    @Test
+    void testFindByIdSuccess() {
+        when(menuItemRepository.findById(anyInt())).thenReturn(Optional.of(new MenuItem()));
+
+        MenuItem retrievedMenuItem = menuItemService.findById(1);
+
+        assertNotNull(retrievedMenuItem);
+        verify(menuItemRepository, times(1)).findById(1);
+    }
+
+    @Test
+    void testFindByIdNotFound() {
+        when(menuItemRepository.findById(anyInt())).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(MenuItemDoesNotExistException.class, () -> {
+            menuItemService.findById(420);
+        });
+
+        assertEquals("menu item does not exist", exception.getMessage());
+    }
+
+    @Test
+    void testFindAllMenuItemsSuccess() {
+        MenuItem menuItem = new MenuItem("Margherita Pizza", 80);
+        when(menuItemRepository.findAll()).thenReturn(List.of(menuItem));
+
+        List<MenuItem> menuItems = menuItemService.findAllMenuItems();
+
+        assertNotNull(menuItems);
+        assertEquals(1, menuItems.size());
+        assertEquals("Margherita Pizza", menuItems.get(0).getName());
+        verify(menuItemRepository, times(2)).findAll();
+    }
+
+    @Test
+    void testFindAllMenuItemsNotFound() {
+        when(menuItemRepository.findAll()).thenReturn(List.of());
+
+        Exception exception = assertThrows(MenuItemDoesNotExistException.class, () -> {
+            menuItemService.findAllMenuItems();
+        });
+
+        assertEquals("no menu items found", exception.getMessage());
+        verify(menuItemRepository, times(1)).findAll();
+    }
 }

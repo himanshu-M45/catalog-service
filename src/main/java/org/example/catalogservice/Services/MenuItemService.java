@@ -2,7 +2,7 @@ package org.example.catalogservice.Services;
 
 import org.example.catalogservice.DTO.GETResponseDTO;
 import org.example.catalogservice.Exceptions.MenuItemAlreadyAddedException;
-import org.example.catalogservice.Exceptions.RestaurantDoesNotExistException;
+import org.example.catalogservice.Exceptions.MenuItemDoesNotExistException;
 import org.example.catalogservice.Models.MenuItem;
 import org.example.catalogservice.Repositories.MenuItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,13 +31,13 @@ public class MenuItemService {
         if (menuItem != null) {
             return menuItem;
         }
-        throw new RestaurantDoesNotExistException("restaurant does not exist");
+        throw new MenuItemDoesNotExistException("menu item does not exist");
     }
 
     public List<MenuItem> findAllMenuItems() {
         List<MenuItem> menuItems = menuItemRepository.findAll();
         if (menuItems.isEmpty()) {
-            throw new RestaurantDoesNotExistException("no restaurants found");
+            throw new MenuItemDoesNotExistException("no menu items found");
         }
         return menuItemRepository.findAll();
     }
