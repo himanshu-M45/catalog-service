@@ -19,4 +19,10 @@ public class CustomExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ResponseDTO<>(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
     }
+
+    @ExceptionHandler(RestaurantDetailsAlreadyAddedException.class)
+    public ResponseEntity<ResponseDTO<String>> handleRestaurantDetailsAlreadyAddedException(RestaurantDetailsAlreadyAddedException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ResponseDTO<>(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+    }
 }
