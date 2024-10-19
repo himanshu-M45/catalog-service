@@ -50,11 +50,6 @@ public class RestaurantService {
         return restaurantRepository.findAll();
     }
 
-    public List<MenuItem> getMenuItemsByRestaurantId(Integer restaurantId) {
-        Restaurant restaurant = findById(restaurantId);
-        return restaurant.getMenu();
-    }
-
     @Transactional
     public String assignMenuItemToRestaurant(int restaurantId, String menuItemIds) {
         Restaurant restaurant = findById(restaurantId);
@@ -80,6 +75,23 @@ public class RestaurantService {
         restaurantRepository.save(restaurant);
 
         return "menu items assigned to restaurant successfully";
+    }
+
+    public List<MenuItem> getMenuItemsByRestaurantId(Integer restaurantId) {
+        Restaurant restaurant = findById(restaurantId);
+        if (restaurant.getMenu().isEmpty()) {
+            throw new MenuItemDoesNotExistException("no menu items found for this restaurant");
+        }
+        return restaurant.getMenu();
+    }
+
+    public MenuItem getSelectedMenuItemById(Integer restaurantId, Integer menuItemId) {
+        Restaurant restaurant = findById(restaurantId);
+        List<MenuItem> menuItems = restaurant.getMenu();
+        return menuItems.stream()
+                .filter(item -> item.getId().equals(menuItemId))
+                .findFirst()
+                .orElseThrow(() -> new MenuItemDoesNotExistException("menu item does not exist in this restaurant"));
     }
 
     public GETResponseDTO convertToDto(Restaurant restaurant) {

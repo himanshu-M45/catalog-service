@@ -53,4 +53,11 @@ public class RestaurantController {
         List<MenuItem> GETResponseDTOS = restaurantService.getMenuItemsByRestaurantId(restaurantId);
         return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), GETResponseDTOS));
     }
+
+    @GetMapping("/{restaurantId}/menu-items/{menuItemId}")
+    public ResponseEntity<Object> getSelectedMenuItemById(@PathVariable Integer restaurantId, @PathVariable Integer menuItemId) {
+        MenuItem menuItem = restaurantService.getSelectedMenuItemById(restaurantId, menuItemId);
+        return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), menuItem));
+    }
+
 }

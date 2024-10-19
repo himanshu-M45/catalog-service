@@ -2,6 +2,7 @@ package org.example.catalogservice.Controllers;
 
 import org.example.catalogservice.DTO.GETResponseDTO;
 import org.example.catalogservice.Exceptions.*;
+import org.example.catalogservice.Models.MenuItem;
 import org.example.catalogservice.Models.Restaurant;
 import org.example.catalogservice.Services.RestaurantService;
 import org.junit.jupiter.api.BeforeEach;
@@ -221,5 +222,95 @@ class RestaurantControllerTest {
                 .andExpect(jsonPath("$.data").value("menu item already assigned to restaurant"));
 
         verify(restaurantService, times(1)).assignMenuItemToRestaurant(1, "1,2,3");
+    }
+
+    @Test
+    void testGetMenuItemsByRestaurantIdSuccess() throws Exception {
+        MenuItem menuItem1 = mock(MenuItem.class);
+        when(menuItem1.getId()).thenReturn(1);
+        when(menuItem1.getName()).thenReturn("Pizza");
+        when(menuItem1.getPrice()).thenReturn(100);
+
+        MenuItem menuItem2 = mock(MenuItem.class);
+        when(menuItem2.getId()).thenReturn(2);
+        when(menuItem2.getName()).thenReturn("Burger");
+        when(menuItem2.getPrice()).thenReturn(50);
+        List<MenuItem> menuItems = List.of(menuItem1, menuItem2);
+
+        when(restaurantService.getMenuItemsByRestaurantId(1)).thenReturn(menuItems);
+
+        mockMvc.perform(get("/restaurants/1/menu-items")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusCode").value(200))
+                .andExpect(jsonPath("$.data[0].id").value(1))
+                .andExpect(jsonPath("$.data[0].name").value("Pizza"))
+                .andExpect(jsonPath("$.data[0].price").value(100))
+                .andExpect(jsonPath("$.data[1].id").value(2))
+                .andExpect(jsonPath("$.data[1].name").value("Burger"))
+                .andExpect(jsonPath("$.data[1].price").value(50));
+
+        verify(restaurantService, times(1)).getMenuItemsByRestaurantId(1);
+    }
+
+    @Test
+    void testGetMenuItemsByRestaurantIdRestaurantNotFound() throws Exception {
+        when(restaurantService.getMenuItemsByRestaurantId(1))
+                .thenThrow(new RestaurantDoesNotExistException("restaurant does not exist"));
+
+        mockMvc.perform(get("/restaurants/1/menu-items")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.statusCode").value(404))
+                .andExpect(jsonPath("$.data").value("restaurant does not exist"));
+
+        verify(restaurantService, times(1)).getMenuItemsByRestaurantId(1);
+    }
+
+    @Test
+    void testGetSelectedMenuItemByIdSuccess() throws Exception {
+        MenuItem menuItem = mock(MenuItem.class);
+        when(menuItem.getId()).thenReturn(1);
+        when(menuItem.getName()).thenReturn("Pizza");
+        when(menuItem.getPrice()).thenReturn(100);
+        when(restaurantService.getSelectedMenuItemById(1, 1)).thenReturn(menuItem);
+
+        mockMvc.perform(get("/restaurants/1/menu-items/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusCode").value(200))
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.name").value("Pizza"))
+                .andExpect(jsonPath("$.data.price").value(100));
+
+        verify(restaurantService, times(1)).getSelectedMenuItemById(1, 1);
+    }
+
+    @Test
+    void testGetSelectedMenuItemByIdRestaurantNotFound() throws Exception {
+        when(restaurantService.getSelectedMenuItemById(1, 1))
+                .thenThrow(new RestaurantDoesNotExistException("restaurant does not exist"));
+
+        mockMvc.perform(get("/restaurants/1/menu-items/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.statusCode").value(404))
+                .andExpect(jsonPath("$.data").value("restaurant does not exist"));
+
+        verify(restaurantService, times(1)).getSelectedMenuItemById(1, 1);
+    }
+
+    @Test
+    void testGetSelectedMenuItemByIdMenuItemNotFound() throws Exception {
+        when(restaurantService.getSelectedMenuItemById(1, 1))
+                .thenThrow(new MenuItemDoesNotExistException("menu item does not exist"));
+
+        mockMvc.perform(get("/restaurants/1/menu-items/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.statusCode").value(404))
+                .andExpect(jsonPath("$.data").value("menu item does not exist"));
+
+        verify(restaurantService, times(1)).getSelectedMenuItemById(1, 1);
     }
 }
