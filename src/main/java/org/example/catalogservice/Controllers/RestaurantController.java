@@ -20,12 +20,14 @@ public class RestaurantController {
     @Autowired
     private RestaurantService restaurantService;
 
+    //    POST restaurant
     @PostMapping("")
     public ResponseEntity<Object> addRestaurant(@RequestBody RequestDTO requestDTO) {
         String response = restaurantService.addRestaurant(requestDTO.getName(), requestDTO.getAddress());
         return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.CREATED.value(), response));
     }
 
+    //    GET all restaurants
     @GetMapping("")
     public ResponseEntity<Object> getAllRestaurant() {
         List<Restaurant> restaurants = restaurantService.findAllRestaurants();
@@ -35,6 +37,7 @@ public class RestaurantController {
         return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), GETResponseDTOS));
     }
 
+    //    GET restaurant by id
     @GetMapping("/{restaurantId}")
     public ResponseEntity<Object> getRestaurantById(@PathVariable Integer restaurantId) {
         Restaurant restaurant = restaurantService.findById(restaurantId);
@@ -42,22 +45,21 @@ public class RestaurantController {
         return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), GETResponseDTO));
     }
 
+    //    POST menu items to respective restaurant
     @PostMapping("/{restaurantId}/menu-items")
-    public ResponseEntity<Object> assign(@PathVariable int restaurantId, @RequestParam String menuItemIds) {
+    public ResponseEntity<Object> assign(@PathVariable Integer restaurantId, @RequestParam String menuItemIds) {
         String response = restaurantService.assignMenuItemToRestaurant(restaurantId, menuItemIds);
         return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), response));
     }
 
+    //    GET all menu items of respective restaurant
     @GetMapping("/{restaurantId}/menu-items")
-    public ResponseEntity<Object> getMenuItemsByRestaurantId(@PathVariable Integer restaurantId) {
+    public ResponseEntity<Object> getMenuItems(@PathVariable Integer restaurantId, @RequestParam(required = false) String menuItemIds) {
+        if (menuItemIds != null) {
+            List<MenuItem> GETResponseDTOS = restaurantService.getSelectedMenuItemsById(restaurantId, menuItemIds);
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), GETResponseDTOS));
+        }
         List<MenuItem> GETResponseDTOS = restaurantService.getMenuItemsByRestaurantId(restaurantId);
         return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), GETResponseDTOS));
     }
-
-    @GetMapping("/{restaurantId}/menu-items/{menuItemId}")
-    public ResponseEntity<Object> getSelectedMenuItemById(@PathVariable Integer restaurantId, @PathVariable Integer menuItemId) {
-        MenuItem menuItem = restaurantService.getSelectedMenuItemById(restaurantId, menuItemId);
-        return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), menuItem));
-    }
-
 }

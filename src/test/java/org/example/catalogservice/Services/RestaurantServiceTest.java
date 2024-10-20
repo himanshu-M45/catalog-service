@@ -202,49 +202,6 @@ class RestaurantServiceTest {
     }
 
     @Test
-    void testGetSelectedMenuItemByIdSuccess() {
-        MenuItem menuItem = mock(MenuItem.class);
-        when(menuItem.getId()).thenReturn(1);
-        when(menuItem.getName()).thenReturn("Pizza");
-        when(menuItem.getPrice()).thenReturn(100);
-        Restaurant restaurant = new Restaurant();
-        restaurant.getMenu().add(menuItem);
-
-        when(restaurantRepository.findById(1)).thenReturn(Optional.of(restaurant));
-
-        MenuItem result = restaurantService.getSelectedMenuItemById(1, 1);
-
-        assertNotNull(result);
-        assertEquals(1, result.getId());
-        assertEquals("Pizza", result.getName());
-        verify(restaurantRepository, times(1)).findById(1);
-    }
-
-    @Test
-    void testGetSelectedMenuItemByIdRestaurantNotFound() {
-        when(restaurantRepository.findById(1)).thenReturn(Optional.empty());
-
-        assertThrows(RestaurantDoesNotExistException.class, () -> {
-            restaurantService.getSelectedMenuItemById(1, 1);
-        });
-
-        verify(restaurantRepository, times(1)).findById(1);
-    }
-
-    @Test
-    void testGetSelectedMenuItemByIdMenuItemNotFound() {
-        Restaurant restaurant = new Restaurant();
-
-        when(restaurantRepository.findById(1)).thenReturn(Optional.of(restaurant));
-
-        assertThrows(MenuItemDoesNotExistException.class, () -> {
-            restaurantService.getSelectedMenuItemById(1, 1);
-        });
-
-        verify(restaurantRepository, times(1)).findById(1);
-    }
-
-    @Test
     void testGetMenuItemsByRestaurantIdSuccess() {
         Restaurant restaurant = new Restaurant();
         MenuItem menuItem1 = new MenuItem("Pizza", 100);
@@ -286,6 +243,49 @@ class RestaurantServiceTest {
         });
 
         assertEquals("no menu items found for this restaurant", exception.getMessage());
+        verify(restaurantRepository, times(1)).findById(1);
+    }
+
+    @Test
+    void testGetSelectedMenuItemsByIdSuccess() {
+        MenuItem menuItem = mock(MenuItem.class);
+        when(menuItem.getId()).thenReturn(1);
+        when(menuItem.getName()).thenReturn("Pizza");
+        when(menuItem.getPrice()).thenReturn(100);
+        Restaurant restaurant = new Restaurant();
+        restaurant.getMenu().add(menuItem);
+
+        when(restaurantRepository.findById(1)).thenReturn(Optional.of(restaurant));
+
+        List<MenuItem> result = restaurantService.getSelectedMenuItemsById(1, "1");
+
+        assertNotNull(result);
+        assertEquals(1, result.get(0).getId());
+        assertEquals("Pizza", result.get(0).getName());
+        verify(restaurantRepository, times(1)).findById(1);
+    }
+
+    @Test
+    void testGetSelectedMenuItemsByIdRestaurantNotFound() {
+        when(restaurantRepository.findById(1)).thenReturn(Optional.empty());
+
+        assertThrows(RestaurantDoesNotExistException.class, () -> {
+            restaurantService.getSelectedMenuItemsById(1, "1");
+        });
+
+        verify(restaurantRepository, times(1)).findById(1);
+    }
+
+    @Test
+    void testGetSelectedMenuItemByIdMenuItemsNotFound() {
+        Restaurant restaurant = new Restaurant();
+
+        when(restaurantRepository.findById(1)).thenReturn(Optional.of(restaurant));
+
+        assertThrows(MenuItemDoesNotExistException.class, () -> {
+            restaurantService.getSelectedMenuItemsById(1, "1");
+        });
+
         verify(restaurantRepository, times(1)).findById(1);
     }
 }

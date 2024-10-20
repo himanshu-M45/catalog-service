@@ -85,13 +85,23 @@ public class RestaurantService {
         return restaurant.getMenu();
     }
 
-    public MenuItem getSelectedMenuItemById(Integer restaurantId, Integer menuItemId) {
+    public List<MenuItem> getSelectedMenuItemsById(Integer restaurantId, String menuItemIds) {
         Restaurant restaurant = findById(restaurantId);
-        List<MenuItem> menuItems = restaurant.getMenu();
-        return menuItems.stream()
-                .filter(item -> item.getId().equals(menuItemId))
-                .findFirst()
-                .orElseThrow(() -> new MenuItemDoesNotExistException("menu item does not exist in this restaurant"));
+        List<Integer> menuItemIdList = Arrays.stream(menuItemIds.split(","))
+                .map(String::trim)
+                .filter(id -> !id.isEmpty())
+                .map(Integer::parseInt)
+                .toList();
+
+        List<MenuItem> selectedMenuItems = restaurant.getMenu().stream()
+                .filter(menuItem -> menuItemIdList.contains(menuItem.getId()))
+                .collect(Collectors.toList());
+
+        if (selectedMenuItems.isEmpty()) {
+            throw new MenuItemDoesNotExistException("one or more menu items do not exist");
+        }
+
+        return selectedMenuItems;
     }
 
     public GETResponseDTO convertToDto(Restaurant restaurant) {

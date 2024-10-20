@@ -31,7 +31,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers(HttpMethod.GET, "/restaurants/**", "/menu-items/{menuItemId}/**", "/restaurants/{restaurantId}/menu-items").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/restaurants/**", "/menu-items/{menuItemId}/**", "/restaurants/{restaurantId}/menu-items/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/restaurants/**", "/menu-items/**, ", "/restaurants/{restaurantId}/menu-items").hasRole("ADMIN")
                                 .anyRequest().authenticated()
                 )
