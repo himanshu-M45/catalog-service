@@ -35,8 +35,7 @@ public class SecurityConfig {
                                         HttpMethod.GET,
                                         "/restaurants/**",
                                         "/menu-items/{menuItemId}/**",
-                                        "/restaurants/{restaurantId}/**",
-                                        "/restaurants/{restaurantId}/menu-items/**"
+                                        "/restaurants/{restaurantId}/**"
                                 ).permitAll()
                                 .requestMatchers(
                                         HttpMethod.POST,
