@@ -45,7 +45,7 @@ public class RestaurantController {
         return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), GETResponseDTO));
     }
 
-    //    POST menu items to respective restaurant
+    //    POST assign menu items to respective restaurant
     @PostMapping("/{restaurantId}/menu-items")
     public ResponseEntity<Object> assign(@PathVariable Integer restaurantId, @RequestParam String menuItemIds) {
         String response = restaurantService.assignMenuItemToRestaurant(restaurantId, menuItemIds);
