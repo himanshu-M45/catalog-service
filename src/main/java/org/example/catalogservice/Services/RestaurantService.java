@@ -2,10 +2,7 @@ package org.example.catalogservice.Services;
 
 import jakarta.transaction.Transactional;
 import org.example.catalogservice.DTO.GETResponseDTO;
-import org.example.catalogservice.Exceptions.MenuItemAlreadyAssignedException;
-import org.example.catalogservice.Exceptions.MenuItemDoesNotExistException;
-import org.example.catalogservice.Exceptions.RestaurantDetailsAlreadyAddedException;
-import org.example.catalogservice.Exceptions.RestaurantDoesNotExistException;
+import org.example.catalogservice.Exceptions.*;
 import org.example.catalogservice.Models.MenuItem;
 import org.example.catalogservice.Models.Restaurant;
 import org.example.catalogservice.Repositories.RestaurantRepository;
@@ -77,7 +74,7 @@ public class RestaurantService {
         return "menu items assigned to restaurant successfully";
     }
 
-    public List<MenuItem> getMenuItemsByRestaurantId(Integer restaurantId) {
+    public List<MenuItem> getAllMenuItemsByRestaurantId(Integer restaurantId) {
         Restaurant restaurant = findById(restaurantId);
         if (restaurant.getMenu().isEmpty()) {
             throw new MenuItemDoesNotExistException("no menu items found for this restaurant");
@@ -85,30 +82,32 @@ public class RestaurantService {
         return restaurant.getMenu();
     }
 
-    public List<MenuItem> getSelectedMenuItemsById(Integer restaurantId, String menuItemIds) {
+    public MenuItem getSelectedMenuItemByRestaurantId(Integer restaurantId, Integer menuItemId) {
         Restaurant restaurant = findById(restaurantId);
-        List<Integer> menuItemIdList = Arrays.stream(menuItemIds.split(","))
-                .map(String::trim)
-                .filter(id -> !id.isEmpty())
-                .map(Integer::parseInt)
-                .toList();
+        List<MenuItem> restaurantMenu = restaurant.getMenu();
 
-        List<MenuItem> selectedMenuItems = restaurant.getMenu().stream()
-                .filter(menuItem -> menuItemIdList.contains(menuItem.getId()))
-                .collect(Collectors.toList());
-
-        if (selectedMenuItems.isEmpty()) {
-            throw new MenuItemDoesNotExistException("one or more menu items do not exist");
+        for (MenuItem menuItem : restaurantMenu) {
+            if (menuItem.getId().equals(menuItemId)) {
+                return menuItem;
+            }
         }
 
-        return selectedMenuItems;
+        throw new RestaurantDoesNotOwnMenuItemException("Restaurant does not own the menu item with id: " + menuItemId);
     }
 
-    public GETResponseDTO convertToDto(Restaurant restaurant) {
+    public GETResponseDTO convertToDtoRestaurant(Restaurant restaurant) {
         GETResponseDTO dto = new GETResponseDTO();
         dto.setId(restaurant.getId());
         dto.setName(restaurant.getName());
-        dto.setAddress(Optional.ofNullable(restaurant.getAddress()));
+        dto.setAddress(Optional.of(restaurant.getAddress()));
+        return dto;
+    }
+
+    public GETResponseDTO convertToDtoMenuItem(MenuItem menuItem) {
+        GETResponseDTO dto = new GETResponseDTO();
+        dto.setId(menuItem.getId());
+        dto.setName(menuItem.getName());
+        dto.setPrice(Optional.of(menuItem.getPrice()));
         return dto;
     }
 }
